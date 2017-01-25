@@ -73,7 +73,7 @@ void loadFiles(const char* path)
 				vMovieFiles.push_back(str);
 				}
 			else
-				if(strstr(hFile->d_name, ".smi") || strstr(hFile->d_name, ".smil") || strstr(hFile->d_name, ".srt"))
+				if(strstr(hFile->d_name, ".smi") || strstr(hFile->d_name, ".smil") || strstr(hFile->d_name, ".srt") || strstr(hFile->d_name, ".ass"))
 				{
 					std::string str2(hFile->d_name);
 					vSmiFiles.push_back(str2);
