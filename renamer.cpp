@@ -67,13 +67,21 @@ void loadFiles(const char* path)
 
 			if(hFile->d_name[0] == '.') continue;
 
-			if (strstr(hFile->d_name, ".mkv") || strstr(hFile->d_name, ".mp4") || strstr(hFile->d_name, ".avi"))
+			if (strstr(hFile->d_name, ".mkv") ||
+				strstr(hFile->d_name, ".mp4") ||
+				strstr(hFile->d_name, ".avi")
+				)
 				{
-				std::string str(hFile->d_name);
-				vMovieFiles.push_back(str);
+					std::string str(hFile->d_name);
+					vMovieFiles.push_back(str);
 				}
 			else
-				if(strstr(hFile->d_name, ".smi") || strstr(hFile->d_name, ".smil") || strstr(hFile->d_name, ".srt") || strstr(hFile->d_name, ".ass"))
+				if(
+						strstr(hFile->d_name, ".smi") ||
+			 	   strstr(hFile->d_name, ".smil") ||
+				   strstr(hFile->d_name, ".srt") ||
+				   strstr(hFile->d_name, ".ass")
+				)
 				{
 					std::string str2(hFile->d_name);
 					vSmiFiles.push_back(str2);
@@ -114,7 +122,8 @@ void renameSmiFiles()
 	int size = vMovieFiles.size();
 
 	for(int i = 0; i<size ; i++)
-		renameFiles(vSmiFiles[i], getFileName(vMovieFiles[i]) + getExtension(vSmiFiles[i]));
+		renameFiles(vSmiFiles[i],
+				getFileName(vMovieFiles[i])	+ getExtension(vSmiFiles[i]));
 
 	std::cout << "\nRename Operation has been done." << std::endl;
 }
@@ -125,7 +134,8 @@ void renameAviFiles()
 	
 	for(int i=0; i<size; i++)
 	{
-		renameFiles(vMovieFiles[i], getFileName(vSmiFiles[i]) + getExtension(vMovieFiles[i]));
+		renameFiles(vMovieFiles[i],
+				getFileName(vSmiFiles[i]) + getExtension(vMovieFiles[i]));
 	}
 	
 	std::cout << "\nRename Operation has been done." << std::endl;
