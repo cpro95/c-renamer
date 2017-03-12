@@ -77,7 +77,7 @@ void loadFiles(const char* path)
 				}
 			else
 				if(
-						strstr(hFile->d_name, ".smi") ||
+				   strstr(hFile->d_name, ".smi") ||
 			 	   strstr(hFile->d_name, ".smil") ||
 				   strstr(hFile->d_name, ".srt") ||
 				   strstr(hFile->d_name, ".ass")
