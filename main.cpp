@@ -1,5 +1,5 @@
 //============================================================================
-// Name        : avi_smi_namer.cpp
+// Name        : main.cpp
 // Author      : cpro95
 // Version     : 0.1
 // Copyright   : Your copyright notice
@@ -14,21 +14,52 @@
 std::vector<std::string> vMovieFiles;
 std::vector<std::string> vSmiFiles;
 
-void init_scr();
+void print_in_middle(WINDOW *win, int starty, int startx, int width, char *string);
 
-int main()
+int main(int argc, char *argv[])
 {
 	// initialize varables
 	int ch;
 	
 	// init ncurses window
-	init_scr();
+	initscr();
+	// cbreak();
+	raw();
+	keypad(stdscr, TRUE);
+	noecho();
 
-	// print welcome ment
-	mvprintw(0,0,"Hello renamer util - by cpro95@gmail.com");
-	refresh();
-	mvprintw(1,0, "Press F10 to exit");
-	refresh();
+	if(has_colors() == FALSE)
+	{
+		endwin();
+		printf("Your terminal does not support color\n");
+		exit(1);
+	}
+	start_color();
+	init_pair(1, COLOR_YELLOW, COLOR_BLACK);
+	init_pair(2, COLOR_BLUE, COLOR_WHITE);
+	mvwprintw(stdscr,0,0,"Press F1 or F2 to change color of text\nF10 to exit");
+
+	while( (ch = getch()) != KEY_F(10)) 
+	{
+		switch(ch)
+		{
+			case KEY_F(1):
+			{
+				attron(COLOR_PAIR(1));
+				print_in_middle(stdscr, LINES / 2 , 0, 0, "Viola !!! In color number 1 ...");
+				attroff(COLOR_PAIR(1));
+				break;
+			}
+			case KEY_F(2):
+			{
+				attron(COLOR_PAIR(2));
+				print_in_middle(stdscr, LINES / 2 , 0, 0, "Viola !!! In color number 2...");
+				attroff(COLOR_PAIR(2));
+				break;
+			}
+
+		}
+	}
 
 /*
 	loadFiles(".");
@@ -53,28 +84,35 @@ int main()
 	}
 */
 	
-	while( (ch = getch()) != KEY_F(10))
-	{
-		switch(ch)
-		{
-			case KEY_DOWN:
-				{
-					mvprintw(2,0,"You pressed Down button");
-					break;
-				}
-		}
-	}
 	// delete ncurses window
 	endwin();
 
 	return 0;
 }
 
-void init_scr()
+void print_in_middle(WINDOW *win, int starty, int startx, int width, char *string)
 {
-	initscr();
-	cbreak();
+	int length, x, y;
+	float temp;
 
-	keypad(stdscr, TRUE);
-	noecho();
+	if(win == NULL)
+		win = stdscr;
+
+	getyx(win,y,x);
+
+	if(startx != 0)
+		x = startx;
+
+	if(starty != 0)
+		y = starty;
+
+	if(width == 0)
+		width = 80;
+
+	length = strlen(string);
+	temp = (width - length) / 2;
+	x = startx + (int)temp;
+
+	mvwprintw(win, y, x, "%s", string);
+	refresh();
 }

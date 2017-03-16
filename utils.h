@@ -1,5 +1,5 @@
 //============================================================================
-// Name        : avi_smi_namer.cpp
+// Name        : utils.cpp
 // Author      : cpro95
 // Version     : 0.1
 // Copyright   : Your copyright notice
