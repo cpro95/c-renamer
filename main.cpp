@@ -219,6 +219,5 @@ void delete_box(WIN *p_win)
 	for(int j = p_win->starty; j <= p_win->starty + p_win->height; j++)
 		for(int i = p_win->startx; i <= p_win->startx + p_win->width; i++)
 			mvaddch(j, i, ' ');
-
 	refresh();
 }
