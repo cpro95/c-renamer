@@ -17,6 +17,7 @@
 // global variables
 extern std::vector<std::string> vMovieFiles;
 extern std::vector<std::string> vSmiFiles;
+extern std::vector<std::string> vTotalFiles;
 
 bool sortOp(std::string i, std::string j)
 {
@@ -30,23 +31,15 @@ bool sortOpReverse(std::string i, std::string j)
 
 int listFiles()
 {
-	int size1, size2;
-	size1 = vMovieFiles.size();
-	size2 = vSmiFiles.size();
-	if(size1 != size2)
-		std::cout << "error : Count does not match " <<
-		"size1 : " << size1 << " size2 : " << size2 << std::endl;
+	int size1 = vMovieFiles.size();
+	int size2 = vSmiFiles.size();
 
-
-
-	for(int i=0; i< size1; i++)
-		std::cout << vMovieFiles[i] << '\n' << vSmiFiles[i] << std::endl;
-		
-	if(size1==0 | size2==0)
+	if(size1 > 0 || size2 > 0)
 	{
 		return 0;
 	}
-	else {
+	else
+	{
 		return 1;
 	}
 	
@@ -90,8 +83,6 @@ void loadFiles(const char* path)
 		}
 	}
 	closedir (dirFile);
-
-	std::cout << "We found " << vMovieFiles.size() << " files.\n" << std::endl;
 }
 
 
@@ -113,33 +104,52 @@ int renameFiles(std::string oldname, std::string newname)
 	int result = rename(oldname.c_str(), newname.c_str());
 
 	if (result != 0)
+	{
 		perror("Error renaming file");
-
-	return 0;
+		return 1;
+	}
+	else return 0;
 }
 
-void renameSmiFiles()
+int renameSmiFiles()
 {
 	int size = vMovieFiles.size();
+	int error;
 
 	for(int i = 0; i<size ; i++)
-		renameFiles(vSmiFiles[i],
+		error += renameFiles(vSmiFiles[i],
 				getFileName(vMovieFiles[i])	+ getExtension(vSmiFiles[i]));
 
-	std::cout << "\nRename Operation has been done." << std::endl;
+	if (error > 0)
+	{	
+		perror("Error renaming file");
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
 }
-
-void renameAviFiles()
+int renameAviFiles()
 {
 	int size = vMovieFiles.size();
+	int error;
 	
 	for(int i=0; i<size; i++)
 	{
-		renameFiles(vMovieFiles[i],
+		error += renameFiles(vMovieFiles[i],
 				getFileName(vSmiFiles[i]) + getExtension(vMovieFiles[i]));
 	}
 	
-	std::cout << "\nRename Operation has been done." << std::endl;
+	if (error > 0)
+	{	
+		perror("Error renaming file");
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
 }
 
 

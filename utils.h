@@ -24,5 +24,5 @@ std::string getExtension(std::string str);
 std::string getFileName(std::string str);
 
 int renameFiles(std::string oldname, std::string newname);
-void renameSmiFiles();
-void renameAviFiles();
+int renameSmiFiles();
+int renameAviFiles();

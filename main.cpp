@@ -14,40 +14,47 @@
 // global variables
 std::vector<std::string> vMovieFiles;
 std::vector<std::string> vSmiFiles;
-
-typedef struct _win_border_struct {
-	chtype ls, rs, ts, bs,
-		   tl, tr, bl, br;
-} WIN_BORDER;
+std::vector<std::string> vTotalFiles;
+/*
+	typedef struct _win_border_struct {
+		chtype ls, rs, ts, bs,
+			   tl, tr, bl, br;
+	} WIN_BORDER;
+*/
 
 typedef struct _WIN_struct {
 	int startx, starty;
 	int height, width;
-	WIN_BORDER border;
+	// WIN_BORDER border;
 } WIN;
 
 void init_win_params(WIN *p_win, int y, int x, int w, int h);
 void print_win_params(WIN *p_win);
 void create_box(WIN *p_win, bool flag);
-void delete_box(WIN *p_win);
+void create_box2(WIN *p_win, bool flag);
 
-void print_in_middle(WINDOW *win, int starty, int startx, int width, std::string string);
+static int index1; // index of movie list
+static int index2; // index of smi list
+static bool index_inside_movie;
 
 int main(int argc, char *argv[])
 {
 	// initialize varables
 	int ch;
 	WIN win;	
+	WIN win2;
+	index1 = 0;
+	index2 = 0;
+	index_inside_movie=TRUE;
 	
 	// init ncurses window
 	initscr();
-	// cbreak();
-	raw();
+	cbreak();
+	//raw();
 	keypad(stdscr, TRUE);
 	noecho();
+	curs_set(0);
 
-	// Initialize the window parameters
-	init_win_params(&win, 5 , 0 , 0, 0);
 
 	if(has_colors() == FALSE)
 	{
@@ -58,70 +65,104 @@ int main(int argc, char *argv[])
 	start_color();
 	init_pair(1, COLOR_YELLOW, COLOR_BLACK);
 	init_pair(2, COLOR_BLUE, COLOR_WHITE);
-	mvwprintw(stdscr,0,0,"Press F1 or F2 to change color of text\nF10 to exit");
+	mvwprintw(stdscr,0,0,"Files renamer v1.0");
+	mvwprintw(stdscr,1,0,"--> renaming subtitles with movies");
+	mvwprintw(stdscr,2,0,"List of movies & subtitles files.");
+	mvwprintw(stdscr,3,0,"press q to exit");
+	int start_line_number = 4;
 
-	while( (ch = getch()) != KEY_F(10)) 
+	// load local files.
+	loadFiles(".");
+
+	// sorting
+	std::sort(vMovieFiles.begin(), vMovieFiles.end(), sortOp);
+	std::sort(vSmiFiles.begin(), vSmiFiles.end(), sortOp);
+	//std::sort(vTotalFiles.begin(), vTotalFiles.end(), sortOp);
+
+	// listFiles return 0 when no error
+	if(listFiles() == 0)
+	{
+
+	init_win_params(&win, start_line_number+2, 0, 0, vMovieFiles.size() + 1);
+	init_win_params(&win2, start_line_number+3+vMovieFiles.size()+3, 0, 0, vSmiFiles.size() + 1);
+	create_box(&win, TRUE);
+	create_box2(&win2, TRUE);
+
+	while( (ch = getch()) != 'q')
 	{
 		switch(ch)
 		{
-			case KEY_F(1):
-			{
-				attron(COLOR_PAIR(1));
-				print_in_middle(stdscr, LINES / 2 , 20, 10, "Viola !!! In color number 1 ...");
-				attroff(COLOR_PAIR(1));
-				break;
-			}
-			case KEY_F(2):
-			{
-				attron(COLOR_PAIR(2));
-				print_in_middle(stdscr, LINES / 2 + 2, 20, 10, "Viola !!! In color number 2...");
-				attroff(COLOR_PAIR(2));
-				break;
-			}
-			case KEY_F(3):
-			{
-				attron(COLOR_PAIR(2));
-				wmove(stdscr, 10,0);
-				waddch(stdscr, '3');
-				attroff(COLOR_PAIR(2));
-				break;
-			}
-			case KEY_F(4):
-			{
-				create_box(&win, TRUE);
-				break;
-			}
-			case KEY_F(5):
-			{
-				delete_box(&win);
-				break;
-			}
 
-		}
-	}
+			case 'j':
+			case KEY_DOWN:
+				{
+					create_box(&win, FALSE);
+					create_box(&win2, FALSE);
 
-/*
-	loadFiles(".");
-	//listFiles();
-	
-	std::sort(vMovieFiles.begin(), vMovieFiles.end(), sortOp);
-	std::sort(vSmiFiles.begin(), vSmiFiles.end(), sortOp);
-	
-	if(listFiles()!=0)
-	{
-		std::cout << "Do you want to rename it by movie names(M) or subtitle names(S)? (M/S), otherwise it'll quit." << std::endl;
-		char c = std::cin.get();
+					if(index_inside_movie == TRUE) {
+						if(index1 == vMovieFiles.size()-1) {
+							index1 = 0;
+						} else
+						{
+							index1++;
+						}
+					} else {
+						if(index2 == vSmiFiles.size()-1) {
+							index2 =0;
+						} else
+						{
+							index2++;
+						}
+					}
+					create_box(&win, TRUE);
+					create_box2(&win2, TRUE);
+					break;
+				}
+				
+			case 'k':
+			case KEY_UP:
+				{
+					create_box(&win, FALSE);
+					create_box(&win2, FALSE);
+
+					if(index_inside_movie == TRUE) {
+						if(index1 == 0) {
+							index1 = vMovieFiles.size()-1;
+						} else
+						{
+							index1--;
+						}
+					} else {
+						if(index2 == 0) {
+							index2 = vSmiFiles.size()-1;
+						} else
+						{
+							index2--;
+						}
+					}
+					create_box(&win, TRUE);
+					create_box2(&win2, TRUE);
+					break;
+				}
+
+			case '\t':
+			case KEY_BTAB:
+				{
+					index_inside_movie = !index_inside_movie; 
+					create_box(&win, TRUE);
+					create_box2(&win2, TRUE);
+					break;
+				}
+		} // switch
+	} // while
 		
-		if(c=='M' || c=='m')
-			renameSmiFiles();
-		else if(c=='S' || c=='s')
-			renameAviFiles();
-			
 	}
-	else{
-		std::cout << "quit" << std::endl;
+	else
+	{
+		std::cout << "No files... Bye..." << std::endl;	
+		endwin();
+		return 1;
 	}
-*/
 	
 	// delete ncurses window
 	endwin();
@@ -129,32 +170,6 @@ int main(int argc, char *argv[])
 	return 0;
 }
 
-void print_in_middle(WINDOW *win, int starty, int startx, int width, std::string str)
-{
-	int length, x, y;
-	float temp;
-
-	if(win == NULL)
-		win = stdscr;
-
-	getyx(win,y,x);
-
-	if(starty != 0)
-		y = starty;
-
-	if(startx != 0)
-		x = startx;
-
-	if(width == 0)
-		width = 80;
-
-	length = str.length();
-	temp = (width - length) / 2;
-	x = startx + (int)temp;
-
-	mvwprintw(win, y, x, "%s", str.c_str());
-	refresh();
-}
 
 void init_win_params(WIN *p_win, int y, int x, int w, int h)
 {
@@ -174,15 +189,16 @@ void init_win_params(WIN *p_win, int y, int x, int w, int h)
 	else
 		// LINES is y-axis
 		p_win->height = LINES - y - 1;
-
-	p_win->border.ls = '|';
-	p_win->border.rs = '|';
-	p_win->border.ts = '-';
-	p_win->border.bs = '-';
-	p_win->border.tl = '+';
-	p_win->border.tr = '+';
-	p_win->border.bl = '+';
-	p_win->border.br = '+';
+	/*
+		p_win->border.ls = '|';
+		p_win->border.rs = '|';
+		p_win->border.ts = '-';
+		p_win->border.bs = '-';
+		p_win->border.tl = '+';
+		p_win->border.tr = '+';
+		p_win->border.bl = '+';
+		p_win->border.br = '+';
+	*/
 }
 
 void create_box(WIN *p_win, bool flag)
@@ -192,32 +208,109 @@ void create_box(WIN *p_win, bool flag)
 	// y is y-axis
 	// w is width
 	// h is height
-	int x, y, w, h;
+	// int x, y, w, h;
 	
-	x = p_win->startx;
-	y = p_win->starty;
-	w = p_win->width;
-	h = p_win->height;
+	int x = p_win->startx;
+	int y = p_win->starty;
+	int w = p_win->width;
+	int h = p_win->height;
 
 	if(flag == TRUE)
 	{
-		mvaddch(y, x, p_win->border.tl);
-		mvaddch(y, x + w, p_win->border.tr);
-		mvaddch(y + h, x, p_win->border.bl);
-		mvaddch(y + h, x + w, p_win->border.br);
+		mvwprintw(stdscr, y-1,0,"Movie Files : %d", vMovieFiles.size());
+	
+		// drawing top_left, top_right, bottom_left, bottom_right
+		mvaddch(y, x, ACS_ULCORNER);
+		mvaddch(y, x + w, ACS_URCORNER);
+		mvaddch(y + h, x, ACS_LLCORNER);
+		mvaddch(y + h, x + w, ACS_LRCORNER);
 
-		mvhline(y, x + 1, p_win->border.ts, w - 1);
-		mvhline(y + h, x + 1, p_win->border.bs, w - 1);
+		// drawing top, bottom horizontal line 
+		mvhline(y, x + 1, ACS_HLINE, w - 1);
+		mvhline(y + h, x + 1, ACS_HLINE, w - 1);
 
-		mvvline(y + 1, x, p_win->border.ls, h - 1);
-		mvvline(y + 1, x + w, p_win->border.rs, h - 1);
+		// drawing left vertical line 
+		mvvline(y + 1, x, ACS_VLINE, h - 1);
+
+		// drawing movie files list into odd line numbers
+		int size1 = vMovieFiles.size();
+		for(int i = 0; i < size1; i++)
+		{
+			if( i == index1 && index_inside_movie == TRUE)
+			{
+				attron(COLOR_PAIR(2));
+				mvwprintw(stdscr, y+1+i, x+2, "%s", vMovieFiles[i].c_str());
+				attroff(COLOR_PAIR(2));
+			} 
+			else
+				mvwprintw(stdscr, y+1+i, x+2, "%s", vMovieFiles[i].c_str());
+		}
+
+		// drawing right vertical line
+		mvvline(y + 1, x + w, ACS_VLINE, h - 1);
+	}
+	else 
+	{
+		for(int k = p_win->starty; k <= p_win->starty + p_win->height; k++)
+			for(int kk = p_win->startx; kk <= p_win->startx + p_win->width; kk++)
+				mvaddch(k, kk, ' ');
+		refresh();
 	}
 }
 
-void delete_box(WIN *p_win)
+void create_box2(WIN *p_win, bool flag)
 {
-	for(int j = p_win->starty; j <= p_win->starty + p_win->height; j++)
-		for(int i = p_win->startx; i <= p_win->startx + p_win->width; i++)
-			mvaddch(j, i, ' ');
-	refresh();
+	int i, j;
+	// x is x-axis
+	// y is y-axis
+	// w is width
+	// h is height
+	// int x, y, w, h;
+	
+	int x = p_win->startx;
+	int y = p_win->starty;
+	int w = p_win->width;
+	int h = p_win->height;
+
+	if(flag == TRUE)
+	{
+		mvwprintw(stdscr,y-1,0,"Subtitle Files : %d", vSmiFiles.size());
+		// drawing top_left, top_right, bottom_left, bottom_right
+		mvaddch(y, x, ACS_ULCORNER);
+		mvaddch(y, x + w, ACS_URCORNER);
+		mvaddch(y + h, x, ACS_LLCORNER);
+		mvaddch(y + h, x + w, ACS_LRCORNER);
+
+		// drawing top, bottom horizontal line 
+		mvhline(y, x + 1, ACS_HLINE, w - 1);
+		mvhline(y + h, x + 1, ACS_HLINE, w - 1);
+
+		// drawing left vertical line 
+		mvvline(y + 1, x, ACS_VLINE, h - 1);
+
+		int size2 = vSmiFiles.size();
+		for(int j = 0; j < size2; j++)
+		{
+			if( j == index2 && index_inside_movie == FALSE)
+			{
+				attron(COLOR_PAIR(2));
+				mvwprintw(stdscr, y+1+j, x+2, "%s", vSmiFiles[j].c_str());
+				attroff(COLOR_PAIR(2));
+			}
+			else
+				mvwprintw(stdscr, y+1+j, x+2, "%s", vSmiFiles[j].c_str());
+		}
+
+		// drawing right vertical line
+		mvvline(y + 1, x + w, ACS_VLINE, h - 1);
+	}
+	else 
+	{
+		for(int k = p_win->starty; k <= p_win->starty + p_win->height; k++)
+			for(int kk = p_win->startx; kk <= p_win->startx + p_win->width; kk++)
+				mvaddch(k, kk, ' ');
+		refresh();
+	}
 }
+
+
