@@ -8,30 +8,24 @@
 
 #include <iostream>
 #include <string>
+#include <vector>
 #include <ncurses.h>
 #include "utils.h"
-
-// global variables
-std::vector<std::string> vMovieFiles;
-std::vector<std::string> vSmiFiles;
-std::vector<std::string> vTotalFiles;
-/*
-	typedef struct _win_border_struct {
-		chtype ls, rs, ts, bs,
-			   tl, tr, bl, br;
-	} WIN_BORDER;
-*/
 
 typedef struct _WIN_struct {
 	int startx, starty;
 	int height, width;
-	// WIN_BORDER border;
 } WIN;
 
 void init_win_params(WIN *p_win, int y, int x, int w, int h);
 void print_win_params(WIN *p_win);
 void create_box(WIN *p_win, bool flag);
 void create_box2(WIN *p_win, bool flag);
+int print_headline(void);
+WINDOW *create_win(int height, int width, int starty, int startx, std::string msg);
+
+std::vector<std::string> vMovieFiles;
+std::vector<std::string> vSmiFiles;
 
 static int index1; // index of movie list
 static int index2; // index of smi list
@@ -46,6 +40,7 @@ int main(int argc, char *argv[])
 	index1 = 0;
 	index2 = 0;
 	index_inside_movie=TRUE;
+	WINDOW *popup_win;
 	
 	// init ncurses window
 	initscr();
@@ -65,11 +60,9 @@ int main(int argc, char *argv[])
 	start_color();
 	init_pair(1, COLOR_YELLOW, COLOR_BLACK);
 	init_pair(2, COLOR_BLUE, COLOR_WHITE);
-	mvwprintw(stdscr,0,0,"Files renamer v1.0");
-	mvwprintw(stdscr,1,0,"--> renaming subtitles with movies");
-	mvwprintw(stdscr,2,0,"List of movies & subtitles files.");
-	mvwprintw(stdscr,3,0,"press q to exit");
-	int start_line_number = 4;
+
+	// print headline
+	int start_line_number = print_headline();
 
 	// load local files.
 	loadFiles(".");
@@ -153,6 +146,66 @@ int main(int argc, char *argv[])
 					create_box2(&win2, TRUE);
 					break;
 				}
+			case 'd':
+				{
+					std::string popup_msg = "delete?(d/esc)";
+					popup_win = create_win(3, popup_msg.length()+3, start_line_number+5,(int)COLS/2-popup_msg.length(),popup_msg);
+					wrefresh(popup_win);
+					
+					int ch2;
+					while( (ch2=getch()) != 'e')
+					{
+						switch(ch2)
+						{
+							case 'd':
+							{
+								if(index_inside_movie)
+								{
+									std::vector<std::string>::iterator iter1=vMovieFiles.begin();
+								if(vMovieFiles.size()!=1){
+									if(index1 == vMovieFiles.size()-1){
+										index1--;
+									}
+									vMovieFiles.erase(iter1 + index1);
+								}
+								start_line_number = print_headline();
+								init_win_params(&win, start_line_number+2, 0, 0, vMovieFiles.size() + 1);
+								init_win_params(&win2, start_line_number+3+vMovieFiles.size()+3, 0, 0, vSmiFiles.size() + 1);
+
+								} else
+								{
+									std::vector<std::string>::iterator iter2=vSmiFiles.begin();
+								if(vSmiFiles.size()!=1){
+									if(index2 == vSmiFiles.size()-1){
+										index2--;
+									}
+									vSmiFiles.erase(iter2 + index2);
+								}
+								start_line_number = print_headline();
+								init_win_params(&win, start_line_number+2, 0, 0, vMovieFiles.size() + 1);
+								init_win_params(&win2, start_line_number+3+vMovieFiles.size()+3, 0, 0, vSmiFiles.size() + 1);
+
+								}
+								break;
+							}
+							case 'e':
+							{
+								delwin(popup_win);
+								break;
+							}
+						} // switch
+						if(ch2 == 'd')
+							break;
+					} //while
+
+					clear();
+					int start_line_number = print_headline();
+					create_box(&win, TRUE);
+					create_box2(&win2, TRUE);
+
+					break;
+				}
+
 		} // switch
 	} // while
 		
@@ -189,16 +242,6 @@ void init_win_params(WIN *p_win, int y, int x, int w, int h)
 	else
 		// LINES is y-axis
 		p_win->height = LINES - y - 1;
-	/*
-		p_win->border.ls = '|';
-		p_win->border.rs = '|';
-		p_win->border.ts = '-';
-		p_win->border.bs = '-';
-		p_win->border.tl = '+';
-		p_win->border.tr = '+';
-		p_win->border.bl = '+';
-		p_win->border.br = '+';
-	*/
 }
 
 void create_box(WIN *p_win, bool flag)
@@ -217,7 +260,7 @@ void create_box(WIN *p_win, bool flag)
 
 	if(flag == TRUE)
 	{
-		mvwprintw(stdscr, y-1,0,"Movie Files : %d", vMovieFiles.size());
+		mvwprintw(stdscr, y-1,0,"Movie Files : %d index1=%d", vMovieFiles.size(),index1);
 	
 		// drawing top_left, top_right, bottom_left, bottom_right
 		mvaddch(y, x, ACS_ULCORNER);
@@ -274,7 +317,7 @@ void create_box2(WIN *p_win, bool flag)
 
 	if(flag == TRUE)
 	{
-		mvwprintw(stdscr,y-1,0,"Subtitle Files : %d", vSmiFiles.size());
+		mvwprintw(stdscr,y-1,0,"Subtitle Files : %d index2:%d", vSmiFiles.size(),index2);
 		// drawing top_left, top_right, bottom_left, bottom_right
 		mvaddch(y, x, ACS_ULCORNER);
 		mvaddch(y, x + w, ACS_URCORNER);
@@ -313,4 +356,24 @@ void create_box2(WIN *p_win, bool flag)
 	}
 }
 
+int print_headline(void)
+{
+	mvwprintw(stdscr,0,0,"Files renamer v1.0");
+	mvwprintw(stdscr,1,0,"--> renaming subtitles with movies");
+	mvwprintw(stdscr,2,0,"List of movies & subtitles files.");
+	mvwprintw(stdscr,3,0,"press q to exit");
 
+	return 4;
+
+}
+
+WINDOW *create_win(int height, int width, int starty, int startx, std::string msg)
+{
+	WINDOW *temp_win;
+
+	temp_win = newwin(height, width, starty, startx);
+	box(temp_win, 0, 0);
+	mvwprintw(temp_win, 1 , 1 , "%s", msg.c_str());
+	wrefresh(temp_win);
+	return temp_win;
+}

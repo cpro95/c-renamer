@@ -17,7 +17,6 @@
 // global variables
 extern std::vector<std::string> vMovieFiles;
 extern std::vector<std::string> vSmiFiles;
-extern std::vector<std::string> vTotalFiles;
 
 bool sortOp(std::string i, std::string j)
 {
