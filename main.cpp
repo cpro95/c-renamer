@@ -33,7 +33,6 @@ int main(int argc, char *argv[])
 	WIN win;	
 	WIN win2;
 	WINDOW *popup_win;
-	WINDOW *popup_win2;
 	
 	// init ncurses window
 	initscr();
@@ -59,7 +58,6 @@ int main(int argc, char *argv[])
 	// sorting
 	std::sort(vMovieFiles.begin(), vMovieFiles.end(), sortOp);
 	std::sort(vSmiFiles.begin(), vSmiFiles.end(), sortOp);
-	//std::sort(vTotalFiles.begin(), vTotalFiles.end(), sortOp);
 
 	// listFiles return 0 when no error
 	if(listFiles() == 0)
@@ -153,9 +151,10 @@ int main(int argc, char *argv[])
 									std::vector<std::string>::iterator iter1=vMovieFiles.begin();
 								if(vMovieFiles.size()!=1){
 									if(index1 == vMovieFiles.size()-1){
+										vMovieFiles.erase(iter1 + index1);
 										index1--;
-									}
-									vMovieFiles.erase(iter1 + index1);
+									} else
+										vMovieFiles.erase(iter1 + index1);
 								}
 								start_line_number = print_headline();
 								init_win_params(&win, start_line_number+2, 0, 0, vMovieFiles.size() + 1);
@@ -166,9 +165,10 @@ int main(int argc, char *argv[])
 									std::vector<std::string>::iterator iter2=vSmiFiles.begin();
 								if(vSmiFiles.size()!=1){
 									if(index2 == vSmiFiles.size()-1){
+										vSmiFiles.erase(iter2 + index2);
 										index2--;
-									}
-									vSmiFiles.erase(iter2 + index2);
+									} else
+										vSmiFiles.erase(iter2 + index2);
 								}
 								start_line_number = print_headline();
 								init_win_params(&win, start_line_number+2, 0, 0, vMovieFiles.size() + 1);
@@ -203,8 +203,8 @@ int main(int argc, char *argv[])
 					wrefresh(stdscr);
 
 					std::string popup_msg = "down/up/esc?(j/k/e)";
-					popup_win2 = create_win(3, popup_msg.length()+3, start_line_number+5,(int)COLS/2-popup_msg.length(),popup_msg);
-					wrefresh(popup_win2);
+					popup_win = create_win(3, popup_msg.length()+3, start_line_number+5,(int)COLS/2-popup_msg.length()/2,popup_msg);
+					wrefresh(popup_win);
 					
 					int ch3;
 					while( (ch3=getch()) != 'e')
@@ -221,10 +221,11 @@ int main(int argc, char *argv[])
 							case KEY_UP:
 							{
 								swapVector(false);
+								break;
 							}
 							case 'e':
 							{
-								delwin(popup_win2);
+								delwin(popup_win);
 								break;
 							}
 						} // end of switch	
@@ -239,8 +240,88 @@ int main(int argc, char *argv[])
 					create_box2(&win2, TRUE,1);
 
 					break; //end of case space
-				}
+				} // case space
 
+			case 'y':
+				{
+
+					// if counts are mismatched
+					if(vMovieFiles.size() != vSmiFiles.size())
+					{
+						std::string popup_msg = "Mismatch Error! (e)";
+						popup_win = create_win(3, popup_msg.length()+3, start_line_number+5,(int)COLS/2-popup_msg.length()/2,popup_msg);
+						wrefresh(popup_win);
+
+						int ch5;
+						while ( (ch5=getch()) != 'e')
+						{
+							switch(ch5)
+							{
+								case 'e':
+								{
+									delwin(popup_win);
+									break;
+								}
+							}
+							if(ch5 == 'e')
+								break;
+						}
+
+						clear();
+						int start_line_number = print_headline();
+						create_box(&win, TRUE,1);
+						create_box2(&win2, TRUE,1);
+						break;
+					} // end of if statement = counts are mismatched
+
+					std::string popup_msg = "confirm?(m)ovies (s)ubtitle(m/s/e)";
+					popup_win = create_win(3, popup_msg.length()+3, start_line_number+5,(int)COLS/2-popup_msg.length()/2,popup_msg);
+					wrefresh(popup_win);
+					
+					int ch4;
+					while( (ch4=getch()) != 'e')
+					{
+						switch(ch4)
+						{
+							case 'm':
+							{
+								int err = renameSmiFiles();
+								std::cout << "err: " << err << std::endl;
+								break;
+							}
+							case 's':
+							{
+								int err = renameAviFiles();
+								std::cout << "err: " << err << std::endl;
+								break;
+							}
+							case 'e':
+							{
+								delwin(popup_win);
+								break;
+							}
+						} // end of switch	
+					if(ch4 == 'm' || ch4 == 's')
+						break;
+					} // while
+
+					// rename it then files reloading
+					// load local files.
+					loadFiles(".");
+
+					// sorting
+					std::sort(vMovieFiles.begin(), vMovieFiles.end(), sortOp);
+					std::sort(vSmiFiles.begin(), vSmiFiles.end(), sortOp);
+
+					clear();
+					init_win_params(&win, start_line_number+2, 0, 0, vMovieFiles.size() + 1);
+					init_win_params(&win2, start_line_number+3+vMovieFiles.size()+3, 0, 0, vSmiFiles.size() + 1);
+					int start_line_number = print_headline();
+					create_box(&win, TRUE,1);
+					create_box2(&win2, TRUE,1);
+
+					break; // end of case y
+				} // case y
 		} // switch
 	} // while
 		

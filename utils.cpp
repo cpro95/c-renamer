@@ -51,6 +51,10 @@ int listFiles()
 
 void loadFiles(const char* path)
 {
+	// clear vectors
+	vMovieFiles.clear();	
+	vSmiFiles.clear();
+	
 	DIR* dirFile = opendir(path);
 	if (dirFile)
 	{
@@ -175,6 +179,7 @@ int swapVector(bool down)
 						imsi2=vMovieFiles[index1+1];
 						vMovieFiles[index1+1] =imsi;
 						vMovieFiles[index1] = imsi2;
+						index1++;
 				}
 			}
 			else
@@ -186,6 +191,7 @@ int swapVector(bool down)
 						imsi2=vSmiFiles[index2+1];
 						vSmiFiles[index2+1] =imsi;
 						vSmiFiles[index2] = imsi2;
+						index2++;
 				}
 			}
 
@@ -201,6 +207,7 @@ int swapVector(bool down)
 					imsi2=vMovieFiles[index1-1];
 					vMovieFiles[index1-1] =imsi;
 					vMovieFiles[index1] = imsi2;
+					index1--;
 				}
 			}
 			else
@@ -211,6 +218,7 @@ int swapVector(bool down)
 					imsi2=vSmiFiles[index2-1];
 					vSmiFiles[index2-1] =imsi;
 					vSmiFiles[index2] = imsi2;
+					index2--;
 				}
 
 			}
