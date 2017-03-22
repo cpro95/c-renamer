@@ -26,3 +26,5 @@ std::string getFileName(std::string str);
 int renameFiles(std::string oldname, std::string newname);
 int renameSmiFiles();
 int renameAviFiles();
+
+int swapVector(bool down);

@@ -14,9 +14,13 @@
 #include <algorithm>
 #include "utils.h"
 
-// global variables
+// global variables in main.cpp
 extern std::vector<std::string> vMovieFiles;
 extern std::vector<std::string> vSmiFiles;
+
+extern int index1;
+extern int index2;
+extern bool index_inside_movie;
 
 bool sortOp(std::string i, std::string j)
 {
@@ -151,4 +155,67 @@ int renameAviFiles()
 	}
 }
 
+
+int swapVector(bool down) 
+{
+	// bool down is direction
+	// true is down direction
+	// false is up direction
+
+	std::string imsi;
+	std::string imsi2;
+
+	if(down==true) // going down
+	{
+			if(index_inside_movie==true)
+			{
+				if(index1 != vMovieFiles.size()-1)
+				{
+						imsi=vMovieFiles[index1];
+						imsi2=vMovieFiles[index1+1];
+						vMovieFiles[index1+1] =imsi;
+						vMovieFiles[index1] = imsi2;
+				}
+			}
+			else
+			{
+				if(index2 != vSmiFiles.size()-1)
+				{
+
+						imsi=vSmiFiles[index2];
+						imsi2=vSmiFiles[index2+1];
+						vSmiFiles[index2+1] =imsi;
+						vSmiFiles[index2] = imsi2;
+				}
+			}
+
+	}
+
+	if(down==false) // going up
+	{
+			if(index_inside_movie==true)
+			{
+				if(index1 != 0)
+				{
+					imsi=vMovieFiles[index1];
+					imsi2=vMovieFiles[index1-1];
+					vMovieFiles[index1-1] =imsi;
+					vMovieFiles[index1] = imsi2;
+				}
+			}
+			else
+			{
+				if(index2 != 0)
+				{
+					imsi=vSmiFiles[index2];
+					imsi2=vSmiFiles[index2-1];
+					vSmiFiles[index2-1] =imsi;
+					vSmiFiles[index2] = imsi2;
+				}
+
+			}
+
+	}
+
+}
 
