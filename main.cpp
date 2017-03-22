@@ -328,8 +328,8 @@ int main(int argc, char *argv[])
 	}
 	else
 	{
-		std::cout << "No files... Bye..." << std::endl;	
 		endwin();
+		std::cout << "You don't have No relative files... Bye..." << std::endl;	
 		return 1;
 	}
 	

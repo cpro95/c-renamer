@@ -136,7 +136,7 @@ int print_headline(void)
 {
 	mvwprintw(stdscr,0,0,"Files renamer v1.0");
 	mvwprintw(stdscr,1,0,"--> renaming subtitles with movies");
-	mvwprintw(stdscr,2,0,"List of movies & subtitles files.");
+	mvwprintw(stdscr,2,0,"d:delete, j:down, k:up, y:change");
 	mvwprintw(stdscr,3,0,"press q to exit");
 
 	return 4;
