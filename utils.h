@@ -18,7 +18,7 @@ bool sortOpReverse(std::string i, std::string j);
 
 int listFiles();
 
-void loadFiles(const char* path);
+void loadFiles(const char *path);
 
 std::string getExtension(std::string str);
 std::string getFileName(std::string str);
